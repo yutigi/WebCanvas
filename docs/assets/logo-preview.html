@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Web Canvas logo</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f7f7fa; color: #303343; font-family: 'Segoe UI', sans-serif; }
+  main { width: 1200px; height: 800px; padding: 48px 64px; }
+  header { display: flex; justify-content: space-between; color: #77788b; font-size: 12px; letter-spacing: 2px; }
+  .hero { height: 390px; display: grid; place-content: center; gap: 28px; margin-top: 30px; border: 1px solid #e8e4f4; border-radius: 24px; background: #efecf9; }
+  .hero img { width: 552px; height: 96px; }
+  .hero p { margin: 0; text-align: center; color: #817697; font-size: 17px; letter-spacing: .2px; }
+  .details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .card { height: 186px; border-radius: 18px; background: white; padding: 22px 26px; display: flex; flex-direction: column; justify-content: space-between; }
+  .card p { margin: 0; color: #77788b; font-size: 11px; letter-spacing: 1.5px; }
+  .sizes { display: flex; align-items: end; gap: 22px; height: 80px; }
+  .mono { background: #303343; }
+  .mono p { color: #cfccd9; }
+  .mono img { filter: invert(1); }
+  .swatches { display: flex; gap: 12px; }
+  .swatch { height: 42px; width: 74px; border-radius: 8px; }
+  .hex { display: flex; gap: 12px; margin-top: 9px; font-size: 9px; color: #77788b; }
+  .hex span { width: 74px; }
+  footer { margin-top: 25px; color: #8b8d9e; font-size: 12px; }
+</style>
+<main>
+  <header><span>WEB CANVAS / IDENTITY</span><span>01 — OVERLAPPING POSSIBILITIES</span></header>
+  <section class="hero">
+    <img src="../../src/assets/logo-wordmark.svg" alt="Web Canvas logo and wordmark">
+    <p>The web, with room to think.</p>
+  </section>
+  <section class="details">
+    <div class="card"><p>ONE MARK. EVERY SCALE.</p><div class="sizes"><img src="../../src/assets/logo.svg" width="64" height="64" alt="64 pixel logo"><img src="../../src/assets/logo.svg" width="32" height="32" alt="32 pixel logo"><img src="../../src/assets/logo.svg" width="24" height="24" alt="24 pixel logo"><img src="../../src/assets/logo.svg" width="16" height="16" alt="16 pixel logo"></div></div>
+    <div class="card mono"><p>A SINGLE INK</p><img src="../../src/assets/logo-monochrome.svg" width="72" height="72" alt="Monochrome logo"></div>
+    <div class="card"><p>QUIETLY DISTINCTIVE</p><div><div class="swatches"><span class="swatch" style="background:#7561d9"></span><span class="swatch" style="background:#cfc6ff"></span><span class="swatch" style="background:#303343"></span></div><div class="hex"><span>#7561D9</span><span>#CFC6FF</span><span>#303343</span></div></div></div>
+  </section>
+  <footer>Two browser windows. One open workspace.</footer>
+</main>
+</html>

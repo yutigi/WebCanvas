@@ -24,12 +24,14 @@ function destroyView(id) {
   entry.session.closeAllConnections().catch(() => {});
 }
 function report(entry, extra = {}) {
+  if (views.get(entry.id) !== entry) return;
   const wc = entry.view.webContents;
   if (wc.isDestroyed()) return;
   if (core.isWebUrl(wc.getURL())) entry.url = wc.getURL();
   emit({ type: 'browser', id: entry.id, url: entry.url, title: wc.getTitle(), loading: wc.isLoading(), back: wc.navigationHistory.canGoBack(), forward: wc.navigationHistory.canGoForward(), ...extra });
 }
 async function capture(entry) {
+  if (views.get(entry.id) !== entry) return;
   const wc = entry.view.webContents;
   if (entry.capturing || wc.isDestroyed() || wc.isLoading() || !entry.loaded) return;
   entry.capturing = true;
@@ -201,7 +203,7 @@ async function command(action, payload) {
 app.whenReady().then(async () => {
   core = await import('./core.mjs');
   Menu.setApplicationMenu(null);
-  win = new BrowserWindow({ width: 1440, height: 960, minWidth: 1000, minHeight: 720, title: 'Web Canvas', backgroundColor: '#f8f9fc', autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webSecurity: true, webviewTag: false } });
+  win = new BrowserWindow({ width: 1440, height: 960, minWidth: 1000, minHeight: 720, title: 'Web Canvas', icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'logo.ico' : 'logo.png'), backgroundColor: '#f8f9fc', autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webSecurity: true, webviewTag: false } });
   win.webContents.on('will-navigate', event => event.preventDefault());
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-attach-webview', event => event.preventDefault());

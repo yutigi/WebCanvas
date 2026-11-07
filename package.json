@@ -1,6 +1,6 @@
 {
   "name": "web-canvas",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A spatial desktop browser for ideas that need room.",
   "main": "src/main.cjs",
@@ -13,7 +13,10 @@
     "build": "node scripts/build.cjs"
   },
   "devDependencies": {
-    "electron": "45.2.3"
+    "electron": "45.2.3",
+    "rcedit": "5.0.2"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

@@ -12,11 +12,17 @@ Checked on Windows with Node.js 22.18.0 on 2026-11-07.
 
 These preview checks exercise the canvas UI. They do not verify native Chromium view integration.
 
-## Blocked in this environment
+## Native verification for 0.1.1
 
-`npm install --cache .cache/npm --fetch-retries=0 --fetch-timeout=15000` failed with `EACCES` fetching `https://registry.npmjs.org/electron`. No Electron runtime was installed and no lockfile could be generated from the registry.
+The earlier registry-access restriction was resolved. Electron 45.2.3 and the executable resource editor are installed with versions recorded in `package-lock.json`.
 
-`npm run test:smoke` correctly reported that Electron was not installed. The real native-view integration suite has **not run**. Desktop startup, view positioning on Windows/DPI changes, live page input, session enforcement, native dialogs, capture behavior, and portable packaging remain unverified. No Windows executable has been produced. macOS/Linux have not been tested.
+`npm run test:smoke` passed on Windows with the normal Chromium sandbox enabled. It verified two live pages, native input, browser history and reload, captures, isolated sessions, sandbox preferences, URL policy, recovery, and view cleanup. The test waits for compositor frames and asynchronous browser destruction; delayed snapshot callbacks now ignore closed views.
+
+`npm run build` produced the Windows x64 portable executable. Its embedded icon was extracted and visually checked against the Web Canvas logo, and Windows file/product version metadata reports `0.1.1`. The ICO includes 16, 24, 32, 48, 64, 128, and 256 pixel images.
+
+The same native smoke suite also passed when launched through the packaged `Web Canvas.exe`.
+
+The application is unsigned. Manual checks for display scaling, native file dialogs, the full presentation workflow, and the remaining cases below are still needed. macOS/Linux have not been tested.
 
 ## Complete native verification
 

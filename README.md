@@ -2,20 +2,22 @@
 
 A Windows-first spatial browser: collect live websites, notes, text, shapes, and images on one pan-and-zoom canvas. Electron hosts real Chromium pages in `WebContentsView` instances; there are no website iframes or security-header workarounds.
 
+The [logo](src/assets/logo.svg) uses two overlapping browser windows on a purple canvas. Available as an [SVG wordmark](src/assets/logo-wordmark.svg) and [single-color mark](src/assets/logo-monochrome.svg); open the [identity preview](docs/assets/logo-preview.html) or [PNG overview](docs/assets/logo-preview.png) to compare sizes and colors. The wordmark uses Segoe UI with an Arial fallback. The app sidebar, favicon, and presentation header share the primary mark.
+
 ![Web Canvas preview showing website cards, a sticky note, canvas tools, and a minimap](docs/assets/canvas-preview.png)
 
 *Canvas-only preview with website placeholders. Live websites run in the desktop app.*
 
 ## Run
 
-Requires Node.js 22+ and Windows 10/11. Development is designed to run on macOS/Linux too; those platforms have not been verified.
+Requires Node.js 22.12+ and Windows 10/11. Development is designed to run on macOS/Linux too; those platforms have not been verified.
 
 ```powershell
 npm install
 npm start
 ```
 
-Electron is the only external dependency. Installation downloads its desktop runtime from the network. Commit the generated `package-lock.json` after installation; use `npm ci` once the lockfile exists.
+Development dependencies are Electron and `rcedit`, which embeds the Windows executable icon and version information during packaging. Installation downloads Electron's desktop runtime from the network. Use `npm ci` to install the versions recorded in `package-lock.json`.
 
 For a **canvas-only preview**, with no dependency installation:
 
@@ -61,9 +63,18 @@ npm run test:smoke  # Real Electron + local fixture integration test; needs inst
 npm run build      # Windows portable folder, matching the installed runtime architecture
 ```
 
-The Windows build appears at `release/Web Canvas-win32-<arch>/Web Canvas.exe`. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder. Packaging on macOS/Linux is deferred.
+The Windows build appears at `release/Web Canvas-win32-<arch>/Web Canvas.exe`. The executable embeds the Web Canvas icon and package version; the window also uses the same logo. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder; move the previous folder aside before rebuilding. Packaging on macOS/Linux is deferred.
 
-See [validation results and remaining checks](docs/validation.md). In the authoring environment, model tests and canvas UI checks passed; registry access was denied, so native desktop execution and packaging remain unverified.
+Download the portable Windows ZIP from [GitHub Releases](https://github.com/yutigi/WebCanvas/releases). Extract the entire archive before opening `Web Canvas.exe`.
+
+The editable logo is `src/assets/logo.svg`. Its committed PNG and multi-resolution ICO exports are used by the desktop app and build. To regenerate them with ImageMagick after editing the SVG:
+
+```powershell
+magick -background none src/assets/logo.svg -resize 256x256 src/assets/logo.png
+magick src/assets/logo.png -define icon:auto-resize=256,128,64,48,32,24,16 src/assets/logo.ico
+```
+
+See [validation results and remaining checks](docs/validation.md). Model tests, syntax checks, the native Electron smoke test, and Windows x64 packaging passed. The executable icon and version metadata were also verified.
 
 ## Source layout
 

@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="11" fill="#7460dc"/><path d="M11 12h13v13H11z" fill="none" stroke="#dcd5ff" stroke-width="2"/><path d="M17 18h13v13H17z" fill="#7460dc" stroke="#fff" stroke-width="2"/><path d="M24 8v5m-2.5-2.5h5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>Web Canvas</title>
+  <rect width="64" height="64" rx="17" fill="#7561D9"/>
+  <rect x="13.5" y="13.5" width="28" height="28" rx="5" stroke="#CFC6FF" stroke-width="3"/>
+  <rect x="22.5" y="22.5" width="28" height="28" rx="5" fill="#7561D9" stroke="white" stroke-width="3"/>
+  <path d="M24 31H49" stroke="white" stroke-width="3"/>
+</svg>

@@ -11,6 +11,14 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
       await new Promise(resolve => setTimeout(resolve, 50));
     }
   };
+  const captureWhenReady = async (webContents, label) => {
+    let image;
+    await waitFor(async () => {
+      try { image = await webContents.capturePage(); return !image.isEmpty(); }
+      catch { return false; } // A newly shown native view may not have a compositor frame yet.
+    }, label);
+    return image;
+  };
   const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "frame-ancestors 'none'" });
     res.end(`<!doctype html><title>${req.url === '/two' ? 'Second page' : 'First page'}</title><h1>Live browser fixture</h1><a href="/two">Next page</a><input aria-label="Test input"><button onclick="this.textContent='Clicked'">Click me</button>`);
@@ -35,7 +43,7 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
     receiveLayout({ ...board, viewport: frame, blocked: false, occluders: [] });
     assert.equal(views.get(a.id).view.getVisible(), true);
     assert.equal(views.get(b.id).view.getVisible(), true);
-    assert.equal((await wc.capturePage()).isEmpty(), false);
+    assert.equal((await captureWhenReady(wc, 'live browser snapshot')).isEmpty(), false);
     await wc.executeJavaScript("document.querySelector('input').focus()");
     wc.insertText('Interactive');
     await waitFor(async () => await wc.executeJavaScript("document.querySelector('input').value") === 'Interactive', 'typing');
@@ -56,9 +64,10 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
     assert.deepEqual((await command('recovery-load')).board, core.validateBoard(board));
     // Only capture the trusted shell here; the fixture contains no private data.
     await fs.mkdir(path.resolve(__dirname, '../.cache'), { recursive: true });
-    await fs.writeFile(path.resolve(__dirname, '../.cache/desktop-smoke.png'), (await win.webContents.capturePage()).toPNG());
+    await fs.writeFile(path.resolve(__dirname, '../.cache/desktop-smoke.png'), (await captureWhenReady(win.webContents, 'shell snapshot')).toPNG());
     await command('sync', { ...board, nodes: [] });
-    assert.equal(views.size, 0); assert.equal(wc.isDestroyed(), true);
+    assert.equal(views.size, 0);
+    await waitFor(() => wc.isDestroyed(), 'browser view cleanup');
     console.log('Desktop smoke passed: live pages, input, history, reload, snapshots, isolated sessions, sandbox, URL policy, recovery, and view cleanup.');
   } finally { server.close(); }
   app.exit(0);

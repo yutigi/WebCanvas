@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Web Canvas monochrome</title>
+  <defs>
+    <mask id="windows">
+      <rect width="64" height="64" fill="white"/>
+      <rect x="13.5" y="13.5" width="28" height="28" rx="5" fill="none" stroke="black" stroke-width="3"/>
+      <rect x="21" y="21" width="31" height="31" rx="6.5" fill="white"/>
+      <rect x="22.5" y="22.5" width="28" height="28" rx="5" fill="none" stroke="black" stroke-width="3"/>
+      <path d="M24 31H49" stroke="black" stroke-width="3"/>
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="17" fill="currentColor" mask="url(#windows)"/>
+</svg>

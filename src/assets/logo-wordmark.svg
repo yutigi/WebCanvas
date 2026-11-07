@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="368" height="64" viewBox="0 0 368 64" fill="none">
+  <title>Web Canvas</title>
+  <rect width="64" height="64" rx="17" fill="#7561D9"/>
+  <rect x="13.5" y="13.5" width="28" height="28" rx="5" stroke="#CFC6FF" stroke-width="3"/>
+  <rect x="22.5" y="22.5" width="28" height="28" rx="5" fill="#7561D9" stroke="white" stroke-width="3"/>
+  <path d="M24 31H49" stroke="white" stroke-width="3"/>
+  <text x="83" y="45" fill="#303343" font-family="Segoe UI, Arial, sans-serif" font-size="39" font-weight="650" letter-spacing="-1.5">web canvas<tspan fill="#7561D9">.</tspan></text>
+</svg>
