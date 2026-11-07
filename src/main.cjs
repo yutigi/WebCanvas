@@ -35,6 +35,7 @@ async function capture(entry) {
   const wc = entry.view.webContents;
   if (entry.capturing || wc.isDestroyed() || wc.isLoading() || !entry.loaded) return;
   entry.capturing = true;
+  entry.lastCaptureAt = Date.now();
   try {
     const image = await wc.capturePage(undefined, { stayHidden: true, stayAwake: false });
     if (!image.isEmpty() && views.get(entry.id) === entry) emit({ type: 'snapshot', id: entry.id, src: image.resize({ width: Math.min(1000, image.getSize().width) }).toDataURL() });
@@ -44,8 +45,10 @@ async function capture(entry) {
 function makeView(node) {
   // An ephemeral, separate session per card also prevents origin zoom/cookie coupling.
   const isolatedSession = session.fromPartition(`webcanvas-${randomUUID()}`);
-  const view = new WebContentsView({ webPreferences: { session: isolatedSession, nodeIntegration: false, nodeIntegrationInSubFrames: false, contextIsolation: true, sandbox: true, webSecurity: true, allowRunningInsecureContent: false, webviewTag: false, devTools: false, backgroundThrottling: true, safeDialogs: true, navigateOnDragDrop: false } });
-  const entry = { id: node.id, view, session: isolatedSession, url: node.url, loaded: false, capturing: false };
+  // Hidden cards still need compositor frames for video previews. Throttling also
+  // changes page visibility, which can make sites stop producing video frames.
+  const view = new WebContentsView({ webPreferences: { session: isolatedSession, nodeIntegration: false, nodeIntegrationInSubFrames: false, contextIsolation: true, sandbox: true, webSecurity: true, allowRunningInsecureContent: false, webviewTag: false, devTools: false, backgroundThrottling: false, safeDialogs: true, navigateOnDragDrop: false } });
+  const entry = { id: node.id, view, session: isolatedSession, url: node.url, loaded: false, capturing: false, mediaPlaying: false, previewOnCanvas: false, lastCaptureAt: 0 };
   const wc = view.webContents;
   views.set(node.id, entry);
   view.setBounds({ x: 0, y: 0, width: Math.round(node.w - 2), height: Math.round(node.h - 85) });
@@ -67,12 +70,20 @@ function makeView(node) {
   wc.on('will-redirect', (event, url, _inPlace, isMainFrame) => { if (isMainFrame) guard(event, url); });
   wc.on('will-frame-navigate', event => { if (event.isMainFrame) guard(event, event.url); });
   wc.on('will-attach-webview', event => event.preventDefault());
+  wc.on('did-start-navigation', (_event, _url, inPlace, isMainFrame) => {
+    if (isMainFrame && !inPlace) { entry.loaded = false; entry.mediaPlaying = false; }
+  });
+  wc.on('media-started-playing', () => { entry.mediaPlaying = true; });
+  wc.on('media-paused', () => {
+    entry.mediaPlaying = false;
+    if (!view.getVisible()) capture(entry);
+  });
   for (const name of ['did-start-loading', 'did-stop-loading', 'page-title-updated', 'did-navigate', 'did-navigate-in-page']) wc.on(name, () => report(entry));
   wc.on('did-finish-load', () => { entry.loaded = true; report(entry, { error: null }); applyLayout(); setTimeout(() => capture(entry), 500); });
   wc.on('did-fail-load', (_event, code, description, url, isMainFrame) => {
     if (isMainFrame && code !== -3) { entry.loaded = false; view.setVisible(false); report(entry, { error: `Could not load ${url}: ${description}` }); }
   });
-  wc.on('render-process-gone', () => { entry.loaded = false; view.setVisible(false); report(entry, { error: 'This website stopped responding. Use Reload to try again.' }); });
+  wc.on('render-process-gone', () => { entry.loaded = false; entry.mediaPlaying = false; view.setVisible(false); report(entry, { error: 'This website stopped responding. Use Reload to try again.' }); });
   wc.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown') return;
     if (input.key === 'Escape' || ((input.control || input.meta) && ['s', 'o', 'l'].includes(input.key.toLowerCase()))) {
@@ -92,6 +103,7 @@ function applyLayout() {
     const entry = views.get(node.id);
     if (!entry) continue;
     const bounds = core.contentRect(node, board.camera, viewport);
+    entry.previewOnCanvas = core.overlaps({ x: bounds.x, y: bounds.y, w: bounds.width, h: bounds.height }, { x: viewport.x, y: viewport.y, w: viewport.width, h: viewport.height });
     const live = entry.loaded && core.liveEligibility(node, index, board, viewport, blocked) && !occluders.some(o => core.overlaps({ x: bounds.x, y: bounds.y, w: bounds.width, h: bounds.height }, o));
     const wasLive = entry.view.getVisible();
     if (!live && wasLive) capture(entry);
@@ -221,7 +233,14 @@ app.whenReady().then(async () => {
   });
   win.on('closed', () => { clearInterval(snapshotTimer); win = null; });
   await win.loadURL(shellUrl);
-  snapshotTimer = setInterval(() => { for (const entry of views.values()) if (!entry.view.getVisible()) capture(entry); }, 8000);
+  snapshotTimer = setInterval(() => {
+    const now = Date.now();
+    for (const entry of views.values()) {
+      if (entry.view.getVisible()) continue;
+      const fastPreview = entry.mediaPlaying && entry.previewOnCanvas && win.isVisible() && !win.isMinimized();
+      if (now - entry.lastCaptureAt >= (fastPreview ? 1000 : 8000)) capture(entry);
+    }
+  }, 1000);
   if (smoke) require('./smoke.cjs').run({ win, views, command, receiveLayout, core, app }).catch(error => { console.error(error); app.exit(1); });
 }).catch(error => { console.error(error); app.exit(1); });
 app.on('login', (event, _wc, _details, _auth, callback) => { event.preventDefault(); callback(); emit({ type: 'notice', message: 'HTTP authentication is not supported in this prototype.' }); });

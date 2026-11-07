@@ -22,6 +22,10 @@ The earlier registry-access restriction was resolved. Electron 45.2.3 and the ex
 
 The same native smoke suite also passed when launched through the packaged `Web Canvas.exe`.
 
+## Background video regression
+
+The expanded source smoke test reproduced frozen hidden video with background throttling enabled. With throttling disabled and media-aware snapshot scheduling, it passes using a local muted video fed by an animated canvas stream. It verifies advancing video frames after switching to another card and hiding the native view, distinct preview images within five seconds while the app is unfocused, playback/pause detection, and media state reset after reload. This does not require YouTube or network media and does not validate YouTube-specific behavior or DRM playback. The existing portable build predates this fix.
+
 The application is unsigned. Manual checks for display scaling, native file dialogs, the full presentation workflow, and the remaining cases below are still needed. macOS/Linux have not been tested.
 
 ## Complete native verification

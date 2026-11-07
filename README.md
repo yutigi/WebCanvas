@@ -42,7 +42,9 @@ Open `http://127.0.0.1:4173`. This preview supports canvas editing, presentation
 
 The canvas zoom range is **25–175%**. Fully contained, uncovered browser content is live at **50–175%**. Multiple eligible websites remain interactive simultaneously. Chromium's page zoom tracks the canvas scale; pages re-render and may reflow rather than behaving like a perfectly scaled screenshot.
 
-Below 50%, while moving/resizing/panning, behind higher objects or floating tools, or partially outside the viewport, a card shows a **snapshot**. Background snapshots refresh approximately every eight seconds after a page loads. They can be stale or blank, particularly for video or protected content. Background pages stay loaded and can continue scripts, audio, and network traffic; snapshot mode does not suspend them.
+Below 50%, while moving/resizing/panning, behind higher objects or floating tools, or partially outside the viewport, a card shows a **snapshot**. Playing media on the visible canvas refreshes approximately once per second, including muted video and when the app loses focus. Other snapshots refresh approximately every eight seconds; media also uses this slower schedule when off the canvas or the window is minimized/hidden. Preview refreshes are best-effort and protected content may remain blank. Use a live card for smooth video playback.
+
+Background pages keep rendering so video does not freeze when a card loses focus or becomes a snapshot. They can continue scripts, audio, and network traffic. This uses more CPU/GPU and battery than throttling hidden pages; close unused cards to release their resources.
 
 **Focus to browse** centers a card and brings it above other objects. In presentation, the current stop is raised visually without changing the saved order. The same live/snapshot rules apply; very large cards may need resizing or a larger app window. All native pages hide while an app dialog or text editor is open. This is an explicit MVP compromise for native view layering, clipping, and input handling.
 
