@@ -2,6 +2,10 @@
 
 A Windows-first spatial browser: collect live websites, notes, text, shapes, and images on one pan-and-zoom canvas. Electron hosts real Chromium pages in `WebContentsView` instances; there are no website iframes or security-header workarounds.
 
+![Web Canvas preview showing website cards, a sticky note, canvas tools, and a minimap](docs/assets/canvas-preview.png)
+
+*Canvas-only preview with website placeholders. Live websites run in the desktop app.*
+
 ## Run
 
 Requires Node.js 22+ and Windows 10/11. Development is designed to run on macOS/Linux too; those platforms have not been verified.
