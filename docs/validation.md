@@ -34,6 +34,21 @@ The Windows development launcher and portable build now use `WebCanvas.exe`. Its
 
 The native smoke suite passed on the first branded development launch, a subsequent cached launch, and the new `release/WebCanvas-win32-x64/WebCanvas.exe` portable build. It asserts the Electron app name and actual executable filename as well as browser/video behavior. Windows executable metadata was checked for both cached and portable runtimes. The development launcher leaves `node_modules/electron/dist/electron.exe` untouched. Normal startup explicitly retains `%APPDATA%/web-canvas` for recovery; smoke tests use their separate fixture profile.
 
+## Release verification for 0.1.2
+
+Checked on Windows x64 with Node.js 22.18.0 and Electron 45.2.3 on 2026-11-08 (Asia/Bangkok).
+
+- `npm test`: all 18 tests passed.
+- `npm run check`: all JavaScript syntax checks passed.
+- `npm run test:smoke`: the source native suite passed with Chromium sandboxing enabled.
+- `npm run build`: rebuilt the Windows x64 portable application from the current source.
+- The same native suite passed through the packaged `release/WebCanvas-win32-x64/WebCanvas.exe`.
+- Packaged executable metadata reports version `0.1.2`, product/file description `WebCanvas`, and original filename `WebCanvas.exe`.
+
+The native suite covers snapshots while subresources stall, preserving the existing document after attachment/204 navigations, multiple-player preview scheduling, unfocused and hidden video, media cleanup across navigation/reload, and recovery after load errors and renderer crashes, alongside the existing browser, session, sandbox, recovery, and cleanup checks. The deliberate failing-page fixture emits `ERR_EMPTY_RESPONSE`; the suite verifies recovery and exits successfully.
+
+This release remains an unsigned portable prototype. The outstanding manual and platform checks above still apply.
+
 ## Complete native verification
 
 From an environment with registry and Electron binary download access:
