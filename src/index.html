@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Web Canvas — Room for your next idea</title>
+  <link rel="icon" href="./assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./renderer.mjs" type="module"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="Web Canvas home"><img src="./assets/logo.svg" alt=""><span>web canvas<span class="brand-dot">.</span></span></a>
+    <div class="workspace-label"><span class="workspace-icon">P</span><div>Personal workspace<small>Local · Just for you</small></div><span data-icon="chevrons" class="muted"></span></div>
+    <div class="sidebar-section">WORKSPACE</div>
+    <button class="nav-item active" id="canvas-nav"><span data-icon="canvas"></span>Your canvas<span class="nav-count" id="node-count">5</span></button>
+    <button class="nav-item" id="open-board"><span data-icon="folder"></span>Open a board<span class="shortcut">Ctrl O</span></button>
+    <button class="nav-item" id="new-board"><span data-icon="plus"></span>New canvas</button>
+    <div class="outline-heading"><span class="sidebar-section">ON THIS CANVAS</span><span id="outline-count">05</span></div>
+    <div id="outline" class="outline" aria-label="Canvas objects"></div>
+    <div class="sidebar-bottom">
+      <div class="tip-card"><span data-icon="sparkles"></span><strong>A new way to browse.</strong><p>Let your tabs become a landscape. Keep the web and your thoughts together.</p><button id="help-tip">Meet your canvas <span>↗</span></button></div>
+      <button class="nav-item" id="help"><span data-icon="help"></span>Guide & shortcuts<span class="shortcut">?</span></button>
+      <div class="local-label"><i></i>Stored on your computer<span>v0.1</span></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="board-heading"><span class="board-symbol" data-icon="canvas"></span><div><div class="breadcrumb">Personal workspace <span>/</span> Canvas</div><input id="board-name" aria-label="Board name" maxlength="100" value="A space for discovery"></div><span class="save-dot" id="save-dot" title="Local changes"></span></div>
+      <div class="top-actions"><button class="button quiet" id="save-board"><span data-icon="save"></span>Save board</button><button class="button primary" id="present"><span data-icon="play"></span>Present</button><button class="avatar" id="about" title="About Web Canvas">WC</button></div>
+    </header>
+    <div class="canvas-bar"><div class="canvas-description"><i></i><span id="engine-status">Your ideas. One infinite canvas.</span></div><div class="canvas-actions"><button id="arrange" title="Arrange objects in a grid"><span data-icon="layout"></span>Arrange</button><span class="bar-divider"></span><button id="add-website" class="add-site"><span data-icon="plus"></span>Add website</button></div></div>
+    <div id="viewport" class="viewport" tabindex="0" aria-label="Infinite canvas. Drag the background to pan; Control and wheel to zoom.">
+      <div class="world" id="world"></div>
+      <div class="canvas-tools" role="toolbar" aria-label="Canvas tools">
+        <button data-tool="select" class="tool active" title="Select (V)" aria-label="Select"><span data-icon="pointer"></span></button>
+        <button data-tool="hand" class="tool" title="Pan (H)" aria-label="Pan"><span data-icon="hand"></span></button>
+        <span class="tool-separator"></span>
+        <button data-tool="browser" class="tool" title="Add website (W)" aria-label="Add website"><span data-icon="globe"></span></button>
+        <button data-tool="note" class="tool" title="Add sticky note (N)" aria-label="Add sticky note"><span data-icon="note"></span></button>
+        <button data-tool="text" class="tool" title="Add text (T)" aria-label="Add text"><span data-icon="text"></span></button>
+        <button data-tool="shape" class="tool" title="Add shape (S)" aria-label="Add shape"><span data-icon="shape"></span></button>
+        <button data-tool="image" class="tool" title="Add image (I)" aria-label="Add image"><span data-icon="image"></span></button>
+      </div>
+      <div id="selection-tools" class="selection-tools" hidden><span id="selection-label">Note</span><div id="color-tools" class="color-tools"></div><button id="focus-node" title="Focus object" aria-label="Focus object"><span data-icon="focus"></span></button><button id="duplicate-node" title="Duplicate" aria-label="Duplicate"><span data-icon="copy"></span></button><button id="delete-node" title="Remove" aria-label="Remove"><span data-icon="trash"></span></button></div>
+      <div class="canvas-caption"><span class="tiny-cross">+</span><span id="canvas-caption">A little room for a bigger picture</span></div>
+      <div class="minimap" id="minimap" title="Click to navigate" aria-label="Canvas minimap"><div class="minimap-label">OVERVIEW <span data-icon="canvas"></span></div><svg id="minimap-svg" viewBox="0 0 160 76" aria-hidden="true"></svg></div>
+      <div class="zoom-controls"><button id="zoom-out" title="Zoom out" aria-label="Zoom out"><span data-icon="minus"></span></button><button id="zoom-label" title="Reset to 100%">80%</button><button id="zoom-in" title="Zoom in" aria-label="Zoom in"><span data-icon="plus"></span></button><span></span><button id="fit" title="Fit all objects (F)" aria-label="Fit all objects"><span data-icon="focus"></span></button></div>
+      <div id="empty-state" hidden><div data-icon="canvas"></div><h1>A fresh perspective.</h1><p>Add your first website or leave yourself a thought.</p><button class="button primary" id="empty-add">Add a website</button></div>
+    </div>
+    <footer class="statusbar"><div><span class="status-light"></span><span id="save-status">Ready to explore</span></div><div><span id="live-status">Canvas preview</span><span class="status-divider">·</span><span>Drag to pan</span><kbd>Ctrl</kbd><span>+ scroll to zoom</span><button id="footer-help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts"><span data-icon="keyboard"></span></button></div></footer>
+  </main>
+  <div class="presentation-controls" id="presentation-controls" hidden><div class="presentation-brand"><img src="./assets/logo.svg" alt="">Web Canvas <span>Presenting</span></div><button id="previous-stop" aria-label="Previous stop"><span data-icon="left"></span></button><span id="stop-count">1 / 5</span><button id="next-stop" aria-label="Next stop"><span data-icon="right"></span></button><button id="presentation-live" class="button primary">Interact with website</button><button id="exit-presentation" class="button quiet">Exit <kbd>Esc</kbd></button></div>
+  <dialog id="dialog"><form id="dialog-form"><div class="dialog-heading"><div class="dialog-icon" data-icon="globe" id="dialog-icon"></div><button type="button" id="dialog-close" aria-label="Close dialog"><span data-icon="close"></span></button></div><h2 id="dialog-title">Bring the web into your canvas.</h2><p id="dialog-description">One website. A whole new perspective.</p><div id="dialog-content"></div><div class="dialog-error" id="dialog-error" role="alert"></div><div class="dialog-footer"><button type="button" class="button quiet" id="dialog-cancel">Cancel</button><button type="submit" class="button primary" id="dialog-submit">Add to canvas <span>↗</span></button></div></form></dialog>
+  <input type="file" id="image-input" accept="image/png,image/jpeg,image/webp" hidden>
+  <input type="file" id="board-input" accept=".webcanvas,.json" hidden>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

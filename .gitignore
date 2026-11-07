@@ -1,0 +1,8 @@
+node_modules/
+release/
+.cache/
+*.webcanvas
+*.tmp
+.env
+.env.*
+!.env.example

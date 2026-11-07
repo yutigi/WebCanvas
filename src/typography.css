@@ -1,0 +1,2 @@
+/* System fonts keep the desktop shell usable offline and avoid font network requests. */
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
