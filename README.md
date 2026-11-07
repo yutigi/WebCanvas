@@ -19,6 +19,8 @@ npm start
 
 Development dependencies are Electron and `rcedit`, which embeds the Windows executable icon and version information during packaging. Installation downloads Electron's desktop runtime from the network. Use `npm ci` to install the versions recorded in `package-lock.json`.
 
+On Windows, `npm start` prepares a branded runtime under `.cache/runtime/` on its first launch. Later launches reuse it; changes to Electron, the icon, or branding prepare a new cache. The executable and its Windows product/file description are named **WebCanvas**, so Task Manager can identify the app. The installed Electron dependency is left untouched. Existing recovery data remains under `%APPDATA%/web-canvas`.
+
 For a **canvas-only preview**, with no dependency installation:
 
 ```powershell
@@ -42,7 +44,9 @@ Open `http://127.0.0.1:4173`. This preview supports canvas editing, presentation
 
 The canvas zoom range is **25–175%**. Fully contained, uncovered browser content is live at **50–175%**. Multiple eligible websites remain interactive simultaneously. Chromium's page zoom tracks the canvas scale; pages re-render and may reflow rather than behaving like a perfectly scaled screenshot.
 
-Below 50%, while moving/resizing/panning, behind higher objects or floating tools, or partially outside the viewport, a card shows a **snapshot**. Background snapshots refresh approximately every eight seconds after a page loads. They can be stale or blank, particularly for video or protected content. Background pages stay loaded and can continue scripts, audio, and network traffic; snapshot mode does not suspend them.
+Below 50%, while moving/resizing/panning, behind higher objects or floating tools, or partially outside the viewport, a card shows a **snapshot**. Playing media on the visible canvas refreshes approximately once per second, including muted video and when the app loses focus. Other snapshots refresh approximately every eight seconds; media also uses this slower schedule when off the canvas or the window is minimized/hidden. Preview refreshes are best-effort and protected content may remain blank. Use a live card for smooth video playback.
+
+Background pages keep rendering so video does not freeze when a card loses focus or becomes a snapshot. They can continue scripts, audio, and network traffic. This uses more CPU/GPU and battery than throttling hidden pages; close unused cards to release their resources.
 
 **Focus to browse** centers a card and brings it above other objects. In presentation, the current stop is raised visually without changing the saved order. The same live/snapshot rules apply; very large cards may need resizing or a larger app window. All native pages hide while an app dialog or text editor is open. This is an explicit MVP compromise for native view layering, clipping, and input handling.
 
@@ -63,9 +67,9 @@ npm run test:smoke  # Real Electron + local fixture integration test; needs inst
 npm run build      # Windows portable folder, matching the installed runtime architecture
 ```
 
-The Windows build appears at `release/Web Canvas-win32-<arch>/Web Canvas.exe`. The executable embeds the Web Canvas icon and package version; the window also uses the same logo. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder; move the previous folder aside before rebuilding. Packaging on macOS/Linux is deferred.
+The Windows build appears at `release/WebCanvas-win32-<arch>/WebCanvas.exe`. The executable embeds the Web Canvas icon and package version, with **WebCanvas** as its product name and file description; the window also uses the same logo. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder; move the previous folder aside before rebuilding. Packaging on macOS/Linux is deferred.
 
-Download the portable Windows ZIP from [GitHub Releases](https://github.com/yutigi/WebCanvas/releases). Extract the entire archive before opening `Web Canvas.exe`.
+Download the portable Windows ZIP from [GitHub Releases](https://github.com/yutigi/WebCanvas/releases). Extract the entire archive before opening its executable. Older releases use `Web Canvas.exe`; new builds use `WebCanvas.exe`.
 
 The editable logo is `src/assets/logo.svg`. Its committed PNG and multi-resolution ICO exports are used by the desktop app and build. To regenerate them with ImageMagick after editing the SVG:
 
