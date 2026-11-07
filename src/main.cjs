@@ -39,7 +39,8 @@ function report(entry, extra = {}) {
 async function capture(entry) {
   if (views.get(entry.id) !== entry) return;
   const wc = entry.view.webContents;
-  if (entry.capturing || !wc || wc.isDestroyed() || wc.isLoading() || !entry.loaded) return;
+  // A DOM-ready page can be captured while slow subresources are still loading.
+  if (entry.capturing || !wc || wc.isDestroyed() || !entry.loaded) return;
   entry.capturing = true;
   entry.lastCaptureAt = Date.now();
   try {
@@ -93,8 +94,9 @@ function makeView(node) {
     if (!entry.mediaPlaying && !view.getVisible()) capture(entry);
   });
   for (const name of ['did-start-loading', 'did-stop-loading', 'page-title-updated', 'did-navigate', 'did-navigate-in-page']) wc.on(name, () => report(entry));
-  wc.on('did-finish-load', () => {
-    // Chromium also finishes loading its internal error document after a failure.
+  wc.on('dom-ready', () => {
+    // Readiness follows the usable document, not completion of every subresource.
+    // Chromium also emits this for its internal error document after a failure.
     if (loadFailed) return;
     entry.loaded = true; report(entry, { error: null }); applyLayout(); setTimeout(() => capture(entry), 500);
   });

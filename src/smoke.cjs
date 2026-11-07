@@ -31,9 +31,14 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
     }
     if (req.url === '/no-content') { res.writeHead(204); res.end(); return; }
     if (req.url === '/pending') return; // No response until the test cancels navigation.
+    if (req.url === '/stalled-image') return; // Keep a usable document loading until stopped.
     if (req.url === '/failure') { req.socket.destroy(); return; }
-    const links = '<a id="attachment" href="/attachment">Download</a><a id="no-content" href="/no-content">No content</a><a id="pending" href="/pending">Pending navigation</a>';
+    const links = '<a id="attachment" href="/attachment">Download</a><a id="no-content" href="/no-content">No content</a><a id="pending" href="/pending">Pending navigation</a><a id="slow" href="/slow">Slow resource</a>';
     res.writeHead(200, { 'Content-Type': 'text/html', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "frame-ancestors 'none'" });
+    if (req.url === '/slow') {
+      res.end('<!doctype html><title>Usable page with stalled image</title><button onclick="this.textContent=\'Clicked\'">Click me</button><img src="/stalled-image">');
+      return;
+    }
     if (req.url.startsWith('/media')) {
       res.end(`<!doctype html><title>Video fixture</title><style>body{margin:0}video{width:45%;height:80vh;object-fit:fill}</style>${links}<video muted playsinline></video><video muted playsinline></video><script>
         const canvas = document.createElement('canvas'); canvas.width = 160; canvas.height = 120;
@@ -115,7 +120,31 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
     await checkUncommittedLink('attachment');
     await checkUncommittedLink('no-content');
     await checkUncommittedLink('pending');
-    await wc.executeJavaScript("document.querySelector('a').click()");
+    let slowDocumentReady = false;
+    wc.once('dom-ready', () => { slowDocumentReady = true; });
+    await wc.executeJavaScript("document.getElementById('slow').click()", true);
+    await waitFor(() => slowDocumentReady && requests.includes('/stalled-image'), 'slow page DOM readiness');
+    assert.equal(wc.isLoading(), true, 'stalled image keeps the page loading');
+    assert.equal(entry.loaded, true, 'usable document is ready before all resources finish');
+    assert.equal(entry.view.getVisible(), true, 'DOM readiness restores the live view');
+    // WebContents.executeJavaScript waits for full load; the frame API can exercise
+    // the usable document while the deliberately stalled resource is pending.
+    await wc.mainFrame.executeJavaScript("document.querySelector('button').click()");
+    assert.equal(await wc.mainFrame.executeJavaScript("document.querySelector('button').textContent"), 'Clicked');
+    const slowCaptures = await snapshotCount();
+    receiveLayout({ ...board, viewport: frame, blocked: true });
+    await waitFor(async () => await snapshotCount() > slowCaptures, 'usable loading page is capturable');
+    assert.equal(wc.isLoading(), true, 'snapshot does not require the stalled image');
+    receiveLayout({ ...board, viewport: frame, blocked: false });
+    assert.equal(entry.view.getVisible(), true, 'usable loading page survives layout changes');
+    wc.stop();
+    await waitFor(() => !wc.isLoading(), 'stalled resource cancellation');
+    receiveLayout({ ...board, viewport: frame, blocked: false });
+    assert.equal(entry.loaded, true, 'stopping subresource loading preserves readiness');
+    assert.equal(entry.view.getVisible(), true, 'stopping subresource loading preserves live browsing');
+    await command('browser', { id: a.id, command: 'back' });
+    await waitFor(() => wc.getURL().endsWith('/one') && entry.loaded && !wc.isLoading(), 'return from stalled-resource page');
+    await wc.executeJavaScript("document.querySelector('a').click()", true);
     await waitFor(() => wc.getURL().endsWith('/two') && !wc.isLoading(), 'navigation');
     await command('browser', { id: a.id, command: 'back' });
     await waitFor(() => wc.getURL().endsWith('/one') && !wc.isLoading(), 'back');
@@ -207,7 +236,7 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
     await command('sync', { ...board, nodes: [] });
     assert.equal(views.size, 0);
     await waitFor(() => wc.isDestroyed(), 'browser view cleanup');
-    console.log('Desktop smoke passed: live pages, attachment/204 document preservation, multiple-player preview cadence, unfocused and hidden video, navigation/reload media cleanup, error/crash recovery, input, history, snapshots, isolated sessions, sandbox, URL policy, recovery, and view cleanup.');
+    console.log('Desktop smoke passed: live pages, stalled-resource readiness and snapshots, attachment/204 document preservation, multiple-player preview cadence, unfocused and hidden video, navigation/reload media cleanup, error/crash recovery, input, history, snapshots, isolated sessions, sandbox, URL policy, recovery, and view cleanup.');
   } finally { if (focusWindow && !focusWindow.isDestroyed()) focusWindow.close(); server.close(); }
   app.exit(0);
 };
