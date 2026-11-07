@@ -19,6 +19,8 @@ npm start
 
 Development dependencies are Electron and `rcedit`, which embeds the Windows executable icon and version information during packaging. Installation downloads Electron's desktop runtime from the network. Use `npm ci` to install the versions recorded in `package-lock.json`.
 
+On Windows, `npm start` prepares a branded runtime under `.cache/runtime/` on its first launch. Later launches reuse it; changes to Electron, the icon, or branding prepare a new cache. The executable and its Windows product/file description are named **WebCanvas**, so Task Manager can identify the app. The installed Electron dependency is left untouched. Existing recovery data remains under `%APPDATA%/web-canvas`.
+
 For a **canvas-only preview**, with no dependency installation:
 
 ```powershell
@@ -65,9 +67,9 @@ npm run test:smoke  # Real Electron + local fixture integration test; needs inst
 npm run build      # Windows portable folder, matching the installed runtime architecture
 ```
 
-The Windows build appears at `release/Web Canvas-win32-<arch>/Web Canvas.exe`. The executable embeds the Web Canvas icon and package version; the window also uses the same logo. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder; move the previous folder aside before rebuilding. Packaging on macOS/Linux is deferred.
+The Windows build appears at `release/WebCanvas-win32-<arch>/WebCanvas.exe`. The executable embeds the Web Canvas icon and package version, with **WebCanvas** as its product name and file description; the window also uses the same logo. Copy the **entire folder**, including licenses and resources. This unsigned portable prototype has no installer or automatic updater. The build refuses to overwrite an existing release folder; move the previous folder aside before rebuilding. Packaging on macOS/Linux is deferred.
 
-Download the portable Windows ZIP from [GitHub Releases](https://github.com/yutigi/WebCanvas/releases). Extract the entire archive before opening `Web Canvas.exe`.
+Download the portable Windows ZIP from [GitHub Releases](https://github.com/yutigi/WebCanvas/releases). Extract the entire archive before opening its executable. Older releases use `Web Canvas.exe`; new builds use `WebCanvas.exe`.
 
 The editable logo is `src/assets/logo.svg`. Its committed PNG and multi-resolution ICO exports are used by the desktop app and build. To regenerate them with ImageMagick after editing the SVG:
 

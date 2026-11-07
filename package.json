@@ -1,5 +1,6 @@
 {
   "name": "web-canvas",
+  "productName": "WebCanvas",
   "version": "0.1.1",
   "private": true,
   "description": "A spatial desktop browser for ideas that need room.",

@@ -4,6 +4,8 @@ exports.run = async ({ win, views, command, receiveLayout, core, app }) => {
   const http = require('node:http');
   const fs = require('node:fs/promises');
   const path = require('node:path');
+  assert.equal(app.getName(), 'WebCanvas');
+  if (process.platform === 'win32') assert.equal(path.basename(process.execPath), 'WebCanvas.exe');
   const waitFor = async (predicate, label, timeout = 15000) => {
     const deadline = Date.now() + timeout;
     while (!await predicate()) {

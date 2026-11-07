@@ -3,8 +3,14 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { pathToFileURL } = require('node:url');
 const { randomUUID } = require('node:crypto');
+const productName = require('../package.json').productName;
 const smoke = process.env.WEBCANVAS_SMOKE === '1';
-if (smoke) app.setPath('userData', path.resolve(__dirname, '../.cache/smoke-profile'));
+// Branding must not move existing boards/recovery into a new profile directory.
+const userDataPath = smoke ? path.resolve(__dirname, '../.cache/smoke-profile') : path.join(app.getPath('appData'), require('../package.json').name);
+require('node:fs').mkdirSync(userDataPath, { recursive: true });
+app.setName(productName);
+app.setPath('userData', userDataPath);
+if (process.platform === 'win32') app.setAppUserModelId('com.webcanvas.app');
 app.enableSandbox();
 let win, core, snapshotTimer, currentPath, closing = false;
 const views = new Map();
@@ -33,7 +39,7 @@ function report(entry, extra = {}) {
 async function capture(entry) {
   if (views.get(entry.id) !== entry) return;
   const wc = entry.view.webContents;
-  if (entry.capturing || wc.isDestroyed() || wc.isLoading() || !entry.loaded) return;
+  if (entry.capturing || !wc || wc.isDestroyed() || wc.isLoading() || !entry.loaded) return;
   entry.capturing = true;
   entry.lastCaptureAt = Date.now();
   try {
@@ -215,7 +221,7 @@ async function command(action, payload) {
 app.whenReady().then(async () => {
   core = await import('./core.mjs');
   Menu.setApplicationMenu(null);
-  win = new BrowserWindow({ width: 1440, height: 960, minWidth: 1000, minHeight: 720, title: 'Web Canvas', icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'logo.ico' : 'logo.png'), backgroundColor: '#f8f9fc', autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webSecurity: true, webviewTag: false } });
+  win = new BrowserWindow({ width: 1440, height: 960, minWidth: 1000, minHeight: 720, title: productName, icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'logo.ico' : 'logo.png'), backgroundColor: '#f8f9fc', autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webSecurity: true, webviewTag: false } });
   win.webContents.on('will-navigate', event => event.preventDefault());
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-attach-webview', event => event.preventDefault());

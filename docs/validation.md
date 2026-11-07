@@ -24,9 +24,15 @@ The same native smoke suite also passed when launched through the packaged `Web 
 
 ## Background video regression
 
-The expanded source smoke test reproduced frozen hidden video with background throttling enabled. With throttling disabled and media-aware snapshot scheduling, it passes using a local muted video fed by an animated canvas stream. It verifies advancing video frames after switching to another card and hiding the native view, distinct preview images within five seconds while the app is unfocused, playback/pause detection, and media state reset after reload. This does not require YouTube or network media and does not validate YouTube-specific behavior or DRM playback. The existing portable build predates this fix.
+The expanded source smoke test reproduced frozen hidden video with background throttling enabled. With throttling disabled and media-aware snapshot scheduling, it passes using a local muted video fed by an animated canvas stream. It verifies advancing video frames after switching to another card and hiding the native view, distinct preview images within five seconds while the app is unfocused, playback/pause detection, and media state reset after reload. This does not require YouTube or network media and does not validate YouTube-specific behavior or DRM playback. Older portable builds predate this fix; the new `WebCanvas.exe` build includes it.
 
 The application is unsigned. Manual checks for display scaling, native file dialogs, the full presentation workflow, and the remaining cases below are still needed. macOS/Linux have not been tested.
+
+## Windows process branding
+
+The Windows development launcher and portable build now use `WebCanvas.exe`. Its embedded `ProductName`, `FileDescription`, and `InternalName` are `WebCanvas`, and `OriginalFilename` is `WebCanvas.exe`. The matching crash helper is renamed to `WebCanvas_wer.dll`. PowerShell process inspection reported the running process name as `WebCanvas`.
+
+The native smoke suite passed on the first branded development launch, a subsequent cached launch, and the new `release/WebCanvas-win32-x64/WebCanvas.exe` portable build. It asserts the Electron app name and actual executable filename as well as browser/video behavior. Windows executable metadata was checked for both cached and portable runtimes. The development launcher leaves `node_modules/electron/dist/electron.exe` untouched. Normal startup explicitly retains `%APPDATA%/web-canvas` for recovery; smoke tests use their separate fixture profile.
 
 ## Complete native verification
 
