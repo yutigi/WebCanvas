@@ -54,8 +54,9 @@ function makeView(node) {
   // Hidden cards still need compositor frames for video previews. Throttling also
   // changes page visibility, which can make sites stop producing video frames.
   const view = new WebContentsView({ webPreferences: { session: isolatedSession, nodeIntegration: false, nodeIntegrationInSubFrames: false, contextIsolation: true, sandbox: true, webSecurity: true, allowRunningInsecureContent: false, webviewTag: false, devTools: false, backgroundThrottling: false, safeDialogs: true, navigateOnDragDrop: false } });
-  const entry = { id: node.id, view, session: isolatedSession, url: node.url, loaded: false, capturing: false, mediaPlaying: false, previewOnCanvas: false, lastCaptureAt: 0 };
+  const entry = { id: node.id, view, session: isolatedSession, url: node.url, loaded: false, capturing: false, playingMedia: 0, get mediaPlaying() { return this.playingMedia > 0; }, previewOnCanvas: false, lastCaptureAt: 0 };
   const wc = view.webContents;
+  let loadFailed = false;
   views.set(node.id, entry);
   view.setBounds({ x: 0, y: 0, width: Math.round(node.w - 2), height: Math.round(node.h - 85) });
   view.setBackgroundColor('#ffffff');
@@ -76,20 +77,31 @@ function makeView(node) {
   wc.on('will-redirect', (event, url, _inPlace, isMainFrame) => { if (isMainFrame) guard(event, url); });
   wc.on('will-frame-navigate', event => { if (event.isMainFrame) guard(event, event.url); });
   wc.on('will-attach-webview', event => event.preventDefault());
-  wc.on('did-start-navigation', (_event, _url, inPlace, isMainFrame) => {
-    if (isMainFrame && !inPlace) { entry.loaded = false; entry.mediaPlaying = false; }
+  // An attempted navigation can leave the current document intact (downloads,
+  // HTTP 204, or cancellation). Invalidate readiness only after replacement commits.
+  wc.on('did-navigate', () => {
+    loadFailed = false;
+    entry.loaded = false;
+    view.setVisible(false);
   });
-  wc.on('media-started-playing', () => { entry.mediaPlaying = true; });
+  // Native events are paired per player, including frame teardown. Keep the count
+  // across commits: late stops from the old document must balance its own starts,
+  // rather than consume starts from players in the replacement document.
+  wc.on('media-started-playing', () => { entry.playingMedia++; });
   wc.on('media-paused', () => {
-    entry.mediaPlaying = false;
-    if (!view.getVisible()) capture(entry);
+    entry.playingMedia = Math.max(0, entry.playingMedia - 1);
+    if (!entry.mediaPlaying && !view.getVisible()) capture(entry);
   });
   for (const name of ['did-start-loading', 'did-stop-loading', 'page-title-updated', 'did-navigate', 'did-navigate-in-page']) wc.on(name, () => report(entry));
-  wc.on('did-finish-load', () => { entry.loaded = true; report(entry, { error: null }); applyLayout(); setTimeout(() => capture(entry), 500); });
-  wc.on('did-fail-load', (_event, code, description, url, isMainFrame) => {
-    if (isMainFrame && code !== -3) { entry.loaded = false; view.setVisible(false); report(entry, { error: `Could not load ${url}: ${description}` }); }
+  wc.on('did-finish-load', () => {
+    // Chromium also finishes loading its internal error document after a failure.
+    if (loadFailed) return;
+    entry.loaded = true; report(entry, { error: null }); applyLayout(); setTimeout(() => capture(entry), 500);
   });
-  wc.on('render-process-gone', () => { entry.loaded = false; entry.mediaPlaying = false; view.setVisible(false); report(entry, { error: 'This website stopped responding. Use Reload to try again.' }); });
+  wc.on('did-fail-load', (_event, code, description, url, isMainFrame) => {
+    if (isMainFrame && code !== -3) { loadFailed = true; entry.loaded = false; view.setVisible(false); report(entry, { error: `Could not load ${url}: ${description}` }); }
+  });
+  wc.on('render-process-gone', () => { loadFailed = true; entry.loaded = false; entry.playingMedia = 0; view.setVisible(false); report(entry, { error: 'This website stopped responding. Use Reload to try again.' }); });
   wc.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown') return;
     if (input.key === 'Escape' || ((input.control || input.meta) && ['s', 'o', 'l'].includes(input.key.toLowerCase()))) {
@@ -143,7 +155,7 @@ async function syncBoard(raw) {
     const entry = views.get(node.id);
     if (!entry) makeView(node);
     else if (entry.url !== node.url) {
-      entry.url = node.url; entry.loaded = false; entry.view.setVisible(false);
+      entry.url = node.url;
       entry.view.webContents.loadURL(node.url).catch(() => {});
     }
   }
@@ -163,8 +175,6 @@ async function command(action, payload) {
     if (!entry) throw new Error('Website not found.');
     const url = core.normalizeUrl(payload.url);
     entry.url = url;
-    entry.loaded = false;
-    entry.view.setVisible(false);
     entry.view.webContents.loadURL(url).catch(() => {});
     return { url };
   }
@@ -174,7 +184,7 @@ async function command(action, payload) {
     const wc = entry.view.webContents;
     if (payload.command === 'back' && wc.navigationHistory.canGoBack()) wc.navigationHistory.goBack();
     else if (payload.command === 'forward' && wc.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
-    else if (payload.command === 'reload') { entry.loaded = false; entry.view.setVisible(false); wc.reload(); }
+    else if (payload.command === 'reload') wc.reload();
     else if (payload.command === 'focus') wc.focus();
     return { ok: true };
   }
