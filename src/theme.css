@@ -1,0 +1,101 @@
+:root { color-scheme: light; color: var(--theme-text); background: var(--theme-canvas); }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+.theme-switch { margin-left: auto; width: 25px; height: 15px; border-radius: 10px; background: var(--line); padding: 3px; flex-shrink: 0; }
+.theme-switch::before { content: ''; display: block; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+.theme-toggle[aria-pressed="true"] .theme-switch { background: var(--purple); }
+.theme-toggle[aria-pressed="true"] .theme-switch::before { transform: translateX(10px); }
+#current-theme { max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* All shell surfaces share these tokens; canvas objects keep their own colors. */
+[data-theme] :is(.sidebar, .topbar, .canvas-bar, .statusbar, .presentation-controls,
+  .canvas-tools, .selection-tools, .zoom-controls, .minimap, .card.browser, .card.image, dialog) {
+  background: var(--theme-surface); border-color: var(--line);
+}
+[data-theme] :is(.workspace-label small, .muted, .sidebar-section, .nav-item,
+  .outline-heading, .outline-item, .outline-item svg, .shortcut, .local-label, .local-label span,
+  .breadcrumb, .breadcrumb span, .button.quiet, .canvas-description, .canvas-actions button,
+  .tool, .card-titlebar, .card-titlebar .card-state, .card-titlebar button, .browser-controls button,
+  .address-form, .address, .selection-tools > span, .selection-tools > button, .canvas-caption,
+  .tiny-cross, .minimap-label, .zoom-controls button, .statusbar, .statusbar button, .status-divider,
+  .presentation-brand span, #stop-count, #empty-state, dialog p, .dialog-heading button,
+  .dialog-label, .dialog-hint, .help-grid, .engine-info) { color: var(--theme-muted); }
+[data-theme] :is(#board-name, .card.text .node-text, .card.text .node-editor, dialog, #empty-state h1) { color: var(--theme-text); }
+[data-theme] :is(.workspace-icon, .board-symbol, .avatar, .dialog-icon, .card-titlebar .site-icon,
+  .nav-item.active, .tool.active, .nav-count) {
+  background: var(--theme-accent-soft); color: var(--theme-accent-text); border-color: var(--line);
+}
+[data-theme] :is(.nav-item:hover, .outline-item:hover, .outline-item.selected, .tool:hover) {
+  background: var(--theme-hover); color: var(--theme-accent-text);
+}
+[data-theme] .tip-card { background: linear-gradient(140deg, var(--theme-accent-soft), var(--theme-surface)); border-color: var(--line); }
+[data-theme] .tip-card p { color: var(--theme-muted); }
+[data-theme] :is(.tip-card > span, .tip-card button, .canvas-actions button.add-site) { color: var(--theme-accent-text); }
+[data-theme] .button { background: var(--theme-raised); border-color: var(--line); }
+[data-theme] .button.primary { background: var(--purple); border-color: var(--purple); color: var(--theme-on-accent); }
+[data-theme] .button.primary:hover { filter: brightness(1.08); }
+[data-theme] button:hover { color: var(--theme-accent-text); }
+[data-theme] :is(.bar-divider, .tool-separator, .zoom-controls > span) { background: var(--line); }
+[data-theme] .viewport { background-color: var(--theme-canvas); background-image: radial-gradient(var(--theme-grid) .85px, transparent .85px); }
+[data-theme] .card-titlebar { background: var(--theme-raised); }
+[data-theme] .browser-controls { background: var(--theme-surface); border-color: var(--line); }
+[data-theme] :is(.address-form, .dialog-input, kbd) { background: var(--theme-input); border-color: var(--line); color: var(--theme-text); }
+[data-theme] .dialog-input::placeholder { color: var(--theme-muted); opacity: 1; }
+[data-theme] .dialog-input:focus { outline-color: var(--purple); }
+[data-theme] .browser-placeholder { background: linear-gradient(145deg, var(--theme-surface), var(--theme-input)); }
+[data-theme] .placeholder-orbit {
+  background: var(--theme-accent-soft); color: var(--theme-accent-text);
+  box-shadow: 0 0 0 17px var(--theme-hover), 0 0 0 33px var(--theme-raised);
+}
+[data-theme] .browser-placeholder strong { color: var(--theme-text); }
+[data-theme] :is(.browser-placeholder p, .browser-placeholder .preview-note) { color: var(--theme-muted); }
+[data-theme] .snapshot-action { background: var(--theme-surface); border-color: var(--line); color: var(--theme-accent-text); }
+[data-theme] .selected .resize-handle { background: var(--theme-raised); border-color: var(--purple); }
+[data-theme] .card.selected::before { border-color: var(--purple); }
+[data-theme] .swatch.current { outline-color: var(--purple); }
+[data-theme] :is(.dialog-footer, .engine-info) { border-color: var(--line); }
+[data-theme="dark"] :is(.canvas-tools, .selection-tools, .zoom-controls, .minimap, .card.browser) { box-shadow: 0 5px 18px #0003; }
+[data-theme="dark"] .browser.is-live .card-state { color: #9ad4b6; }
+[data-theme="dark"] dialog { box-shadow: 0 25px 90px #0008; }
+[data-theme="dark"] dialog::backdrop { background: #0a081480; }
+[data-theme="dark"] .dialog-error { color: #f0a2b5; }
+[data-theme="dark"] .toast { background: var(--theme-raised); border-color: var(--line); color: var(--theme-text); }
+
+.card.note, .card.shape { color-scheme: light; }
+.card.note .node-editor { color: #79694f; }
+.card.shape .node-editor { color: #4d6b60; }
+
+/* Appearance editor */
+dialog:has(.theme-editor) { max-width: 650px; max-height: calc(100vh - 40px); overflow: auto; }
+dialog:has(.theme-editor) h2 { margin-top: 16px; }
+.theme-editor { color: var(--theme-text); }
+.theme-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 10px; }
+.theme-section-heading h3 { margin: 0; font-size: 12px; font-weight: 600; }
+.theme-system { font-size: 11px; color: var(--theme-accent-text); border-radius: 5px; padding: 5px 8px; }
+.theme-system[aria-pressed="true"] { background: var(--theme-accent-soft); }
+.theme-preset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.theme-preset {
+  padding: 8px; border: 1px solid var(--line); border-radius: 8px; text-align: left;
+  background: var(--theme-raised); color: var(--theme-text); min-width: 0;
+}
+.theme-preset[aria-pressed="true"] { border-color: var(--purple); box-shadow: 0 0 0 1px var(--purple); }
+.theme-preview { display: flex; height: 38px; padding: 6px; gap: 5px; border-radius: 4px; background: var(--preview-canvas); margin-bottom: 7px; }
+.theme-preview::before { content: ''; width: 16px; background: var(--preview-surface); border-radius: 2px; }
+.theme-preview::after { content: ''; width: 28px; background: var(--preview-accent); border-radius: 3px; margin: 4px 0; }
+.theme-preset-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.theme-custom-grid { margin-top: 9px; }
+.theme-editor-fields { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 1px; }
+.theme-name-row { display: grid; grid-template-columns: 1fr 125px; gap: 12px; }
+.theme-editor .dialog-label { margin: 10px 0 6px; }
+.theme-editor .dialog-input { height: 35px; }
+.theme-color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.theme-color-field { display: flex; gap: 7px; align-items: center; }
+.theme-color-field input[type="color"] { width: 38px; height: 35px; flex-shrink: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--theme-input); padding: 3px; cursor: pointer; }
+.theme-color-field input[type="text"] { min-width: 0; font-family: Consolas, monospace; }
+.theme-editor-note { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; color: var(--theme-muted); font-size: 10px; line-height: 1.6; }
+.theme-delete { color: var(--theme-accent-text); padding: 5px 0; white-space: nowrap; }
+.theme-color-field input[aria-invalid="true"] { border-color: #c15c72; }
+@media (max-width: 600px) {
+  .theme-preset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .theme-color-grid, .theme-name-row { grid-template-columns: 1fr; }
+}
