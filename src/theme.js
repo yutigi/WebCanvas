@@ -84,7 +84,11 @@
   window.canvasTheme = Object.freeze({
     getSettings: () => copy(settings), getPresets: () => copy(presets), resolve,
     preview: state => { previewSettings = normalize(state); apply(); },
-    restore: () => { previewSettings = null; apply(); }, commit, validColor, contrast
+    restore: () => { previewSettings = null; apply(); }, commit, validColor, contrast,
+    onSystemChange: listener => {
+      systemTheme.addEventListener('change', listener);
+      return () => systemTheme.removeEventListener('change', listener);
+    }
   });
   apply();
   systemTheme.addEventListener('change', apply);

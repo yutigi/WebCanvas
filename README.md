@@ -65,6 +65,7 @@ This is a prototype, not a hardened replacement for a maintained general-purpose
 npm test            # Node model, board validation, URL policy, and geometry tests
 npm run check       # Syntax checks for all JavaScript
 npm run test:smoke  # Real Electron + local fixture integration test; needs installed runtime
+npm run test:themes # Theme editor regressions in an isolated Electron profile
 npm run build      # Windows portable folder, matching the installed runtime architecture
 ```
 

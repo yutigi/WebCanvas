@@ -5,14 +5,21 @@ export function openThemeEditor({ openDialog, toast }) {
   const themes = window.canvasTheme, draft = themes.getSettings(), presets = themes.getPresets();
   const pending = new Set();
   let editBlocked = false;
+  let unsubscribeSystem = () => {};
   openDialog({
     title: 'Make this space yours.', description: 'Choose a preset or create your own. Preview changes, then apply to save.',
-    iconName: 'palette', submit: 'Apply theme', onCancel: themes.restore,
+    iconName: 'palette', submit: 'Apply theme',
+    onCancel: () => { unsubscribeSystem(); themes.restore(); },
     onSubmit: () => {
       if (editBlocked) throw new Error('Delete a custom theme or choose a preset before applying.');
       if (document.querySelector('.theme-editor [aria-invalid="true"]')) throw new Error('Enter colors in the format #7561d9.');
-      if (draft.selected.startsWith('custom-') && !draft.customThemes.find(t => t.id === draft.selected)?.name.trim()) throw new Error('Give your custom theme a name.');
+      const unnamed = draft.customThemes.find(theme => !theme.name.trim());
+      if (unnamed) {
+        draft.selected = unnamed.id; fillEditor(); nameInput.focus();
+        throw new Error('Give every custom theme a name before applying.');
+      }
       const saved = themes.commit(draft);
+      unsubscribeSystem();
       toast(saved ? 'Theme saved on this computer.' : 'Theme applied for this session. Local storage could not be saved.');
     },
     content: `<div class="theme-editor">
@@ -108,4 +115,7 @@ export function openThemeEditor({ openDialog, toast }) {
     draft.selected = mode; fillEditor();
   };
   fillEditor();
+  unsubscribeSystem = themes.onSystemChange(() => {
+    if (draft.selected === 'system') fillEditor();
+  });
 }
