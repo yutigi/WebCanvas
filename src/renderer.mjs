@@ -1,5 +1,6 @@
 import { LIMITS, PALETTE, clamp, createBoard, createNode, normalizeUrl, validateBoard, fitCamera } from './core.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
+import { openThemeEditor } from './theme-editor.mjs';
 
 const $ = selector => document.querySelector(selector);
 const desktop = !!window.webCanvas?.desktop;
@@ -76,7 +77,7 @@ function renderMinimap() {
   const ox = (160 - (right - left) * scale) / 2, oy = (76 - (bottom - top) * scale) / 2;
   minimapBounds = { left, top, scale, ox, oy };
   const rect = (n, attrs) => `<rect x="${(n.x - left) * scale + ox}" y="${(n.y - top) * scale + oy}" width="${n.w * scale}" height="${n.h * scale}" rx="1" ${attrs}/>`;
-  $('#minimap-svg').innerHTML = nodes.map(n => rect(n, `fill="${n.type === 'browser' ? '#e6dfef' : n.type === 'text' ? '#cec7d9' : n.color}"`)).join('') + rect(visibleWorld, 'fill="#a793d612" stroke="#b8a5d1" stroke-width=".8"');
+  $('#minimap-svg').innerHTML = nodes.map(n => rect(n, `fill="${n.type === 'browser' ? 'var(--theme-map-browser)' : n.type === 'text' ? 'var(--theme-map-text)' : n.color}"`)).join('') + rect(visibleWorld, 'fill="var(--purple)" fill-opacity=".06" stroke="var(--purple)" stroke-width=".8"');
 }
 function cardMarkup(node) {
   if (node.type === 'browser') return `<div class="card-titlebar" data-drag><span class="site-icon">${icon('globe')}</span><span class="card-title">${escape(node.title)}</span><span class="card-state">${desktop ? 'LOADING' : 'PREVIEW'}</span><button data-action="focus" title="Focus website" aria-label="Focus website">${icon('expand')}</button><button data-action="remove" title="Remove website" aria-label="Remove website">${icon('close')}</button></div><div class="browser-controls"><button data-action="back" disabled title="Back" aria-label="Back">${icon('left')}</button><button data-action="forward" disabled title="Forward" aria-label="Forward">${icon('right')}</button><button data-action="reload" title="Reload" aria-label="Reload">${icon('reload')}</button><form class="address-form">${icon(node.url.startsWith('https:') ? 'lock' : 'globe')}<input class="address" aria-label="Website address" value="${escape(node.url)}" spellcheck="false"><button title="Navigate" aria-label="Navigate">${icon('arrow')}</button></form></div><div class="browser-body"><img class="snapshot" alt="Website snapshot" hidden><div class="browser-placeholder"><span class="preview-note">${desktop ? 'A window into the web' : 'Desktop browser preview'}</span><div class="placeholder-orbit">${icon('globe')}</div><strong class="placeholder-title">${escape(new URL(node.url).hostname)}</strong><p class="placeholder-description">${desktop ? 'Your live website is opening here.' : 'Real, interactive websites live here in the desktop app. Run npm start to explore.'}</p></div><button class="snapshot-action" data-action="focus">${icon('expand')}<span>Focus to browse</span></button></div><div class="resize-handle" data-resize></div>`;
@@ -361,6 +362,7 @@ $('#dialog-close').onclick = $('#dialog-cancel').onclick = () => closeDialog(tru
 $('#dialog').addEventListener('cancel', event => { event.preventDefault(); closeDialog(true); });
 $('#add-website').onclick = $('#empty-add').onclick = websiteDialog;
 $('#help').onclick = $('#help-tip').onclick = $('#footer-help').onclick = $('#about').onclick = help;
+$('#theme-settings').onclick = () => { if (!modal) openThemeEditor({ openDialog, toast }); };
 $('#save-board').onclick = () => saveBoard().catch(error => toast(error.message));
 $('#open-board').onclick = () => openBoard().catch(error => toast(error.message));
 $('#new-board').onclick = () => newBoard().catch(error => toast(error.message));
@@ -433,7 +435,8 @@ function shortcut(key, ctrl = false, shift = false) {
   else if (key === 'f') $('#fit').click(); else if (key === 'p') togglePresentation(); else if (key === '?') help();
 }
 document.addEventListener('keydown', event => {
-  if (event.target.matches('input,textarea,[contenteditable=true]')) return;
+  if (event.target.matches('input,textarea,select,[contenteditable=true]')) return;
+  if (event.target.closest('button') && [' ', 'Enter'].includes(event.key)) return;
   if (event.code === 'Space' && !modal) { event.preventDefault(); space = true; scheduleLayout(); return; }
   if (event.ctrlKey || event.metaKey || ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(event.key)) event.preventDefault();
   shortcut(event.key.toLowerCase(), event.ctrlKey || event.metaKey, event.shiftKey);

@@ -31,6 +31,7 @@ Open `http://127.0.0.1:4173`. This preview supports canvas editing, presentation
 
 ## Use the canvas
 
+- **Themes** in the sidebar opens six presets (Light, Dark, Midnight, Forest, Rose, Sand) and a custom theme editor. Change accent, canvas, panel, and text colors with a picker or six-digit hex value, choose light/dark appearance, and name your theme. Changes preview live; **Apply theme** saves them locally, while Cancel or Escape restores your previous appearance. Save up to 12 custom themes, edit or delete them, or choose **Use system appearance**. The **Dark theme** switch still provides a quick light/dark reset. Your previous theme preference is preserved when upgrading. Notes, shapes, images, and website content keep their own colors.
 - **Add website** or `W`: enter an HTTP(S) URL. Each card has back, forward, reload, an address bar, Focus, and Close.
 - Drag browser headers or annotation bodies to move; drag the lower-right corner to resize. Select an object to change its color, duplicate it, or remove it.
 - Drag empty canvas to pan. Use the hand tool (`H`) or hold Space to pan over cards. Ctrl + wheel zooms; `F` fits the board. Wheel events inside a live website belong to that website.
